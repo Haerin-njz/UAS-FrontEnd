@@ -1,5 +1,6 @@
 import Image from "next/image"; 
 import React from "react";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -9,9 +10,9 @@ export default function Home() {
         <div className="container">
           <div className="logo">UTS Front END</div>
           <div className="login-signup">
-            <a href="/index/login.html" className="login-btn">
-              Log In
-            </a>
+          <Link href="/login" className="login-btn">
+            Log In
+          </Link>
             <a href="/index/sign-up.html" className="signup-btn">
               Sign Up
             </a>
