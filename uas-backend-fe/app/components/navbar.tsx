@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link'; // <-- 1. TAMBAHKAN IMPORT INI
 
 export default function Navbar() {
   return (
@@ -14,13 +15,20 @@ export default function Navbar() {
           id="user-icon"
           style={{ display: "none" }}
         >
-          <a href="profile.html">
+          {/* 2. UBAH BAGIAN DI BAWAH INI */}
+          <Link href="/history">
             <img
               src="/img/icons/user.png"
               alt="Akun Saya"
-              style={{ width: "32px", height: "32px", borderRadius: "50%" }}
+              style={{ 
+                width: "32px", 
+                height: "32px", 
+                borderRadius: "50%",
+                cursor: "pointer" // Opsional: agar kursor berubah jadi tangan
+              }}
             />
-          </a>
+          </Link>
+          {/* AKHIR PERUBAHAN */}
         </div>
       </div>
     </header>

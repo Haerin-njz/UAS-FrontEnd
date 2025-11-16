@@ -1,7 +1,9 @@
 'use client'; 
 
-import Image from "next/image";
 import React, { useState, FormEvent } from "react";
+import Link from "next/link";
+import Navbar from "../components/navbar"; // <-- 1. IMPORT NAVBAR
+import Footer from "../components/footer"; // <-- 2. IMPORT FOOTER
 
 export default function BeliTiketPage() {
   const [name, setName] = useState('');
@@ -45,36 +47,7 @@ export default function BeliTiketPage() {
 
   return (
     <>
-      <header>
-        <div className="container">
-          <div className="logo">UTS Front END</div>
-          <div className="login-signup">
-            <a href="/index/login.html" className="login-btn">
-              Log In
-            </a>
-            <a href="/index/sign-up.html" className="signup-btn">
-              Sign Up
-            </a>
-          </div>
-          <div
-            className="user-account"
-            id="user-icon"
-            style={{ display: "none" }}
-          >
-            <a href="profile.html">
-              <img
-                src="/img/icons/user.png"
-                alt="Akun Saya"
-                style={{
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "50%",
-                }}
-              />
-            </a>
-          </div>
-        </div>
-      </header>
+      <Navbar /> {/* <-- 3. GANTI HEADER DENGAN KOMPONEN INI */}
       
       <main>
         <div className="container">
@@ -140,30 +113,7 @@ export default function BeliTiketPage() {
         </div>
       </main>
 
-      <footer>
-        <div className="container">
-          <div className="media-social">
-            <a href="#">
-              <img src="/img/icons/facebook.png" />
-              Facebook
-            </a>
-            <a href="#">
-              <img src="/img/icons/instagram.png" />
-              Instagram
-            </a>
-            <a href="#">
-              <img src="/img/icons/twitter.png" />
-              Twitter
-            </a>
-            <a href="#">
-              <img src="/img/icons/youtube.png" />
-              YouTube
-            </a>
-          </div>
-          <hr />
-          <p className="copyright">&copy;Copyrights Kelompok 4</p>
-        </div>
-      </footer>
+      <Footer /> {/* <-- 4. GANTI FOOTER DENGAN KOMPONEN INI */}
     </>
   );
 }
