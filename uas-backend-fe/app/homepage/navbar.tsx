@@ -9,7 +9,7 @@ export default function Navbar() {
         <div className="logo">UTS Front END</div>
         <div className="login-signup">
           <Link href="/login">Log In</Link>
-          <a href="/index/sign-up.html" className="signup-btn">Sign Up</a>
+         <Link href="/signup">Sign Up</Link>
         </div>
         <div
           className="user-account"
