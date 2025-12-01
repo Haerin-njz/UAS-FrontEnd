@@ -3,151 +3,182 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+// =====================
+// TYPE DEFINITIONS
+// =====================
+type SeatData = { seat: string; time: number };
+
 export default function CheckoutPage() {
-	const router = useRouter();
-	const searchParams = useSearchParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-	// URL params
-	const jamParam = searchParams?.get("jam") || "12:00";
-	const filmParam = searchParams?.get("film") || "ONE PIECE FILM RED";
+  // URL params
+  const jamParam = searchParams?.get("jam") || "12:00";
+  const filmParam = searchParams?.get("film") || "ONE PIECE FILM RED";
 
-	const [bookings, setBookings] = useState<Record<string, string[]>>({
-		"12:00": [],
-		"14:00": [],
-		"16:00": [],
-		"18:00": [],
-		"20:00": [],
-	});
+  // =====================
+  // STATE
+  // =====================
+  const [bookings, setBookings] = useState<Record<string, SeatData[]>>({
+    "12:00": [],
+    "14:00": [],
+    "16:00": [],
+    "18:00": [],
+    "20:00": [],
+  });
 
-	const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>([]);
 
-	// daily reset and load bookings from localStorage
-	useEffect(() => {
-		const today = new Date().toISOString().split("T")[0];
-		const lastDate = localStorage.getItem("lastBookingDate");
+  // =====================
+  // LOAD BOOKINGS + CLEAN EXPIRED SEATS
+  // =====================
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    const lastDate = localStorage.getItem("lastBookingDate");
 
-		if (lastDate !== today) {
-			localStorage.removeItem("bookings");
-			localStorage.setItem("lastBookingDate", today);
-		}
+    // reset harian
+    if (lastDate !== today) {
+      localStorage.removeItem("bookings");
+      localStorage.setItem("lastBookingDate", today);
+    }
 
-		const stored = localStorage.getItem("bookings");
-		if (stored) {
-			try {
-				const parsed = JSON.parse(stored);
-				setBookings((prev) => ({ ...prev, ...parsed }));
-			} catch (e) {
-				setBookings((prev) => ({ ...prev }));
-			}
-		}
-	}, []);
+    const stored = localStorage.getItem("bookings");
+    if (!stored) return;
 
-	// helper: toggle seat
-	function toggleSeat(seatId: string) {
-		setSelected((prev) => {
-			if (prev.includes(seatId)) return prev.filter((s) => s !== seatId);
-			return [...prev, seatId];
-		});
-	}
+    const parsed: Record<string, SeatData[]> = JSON.parse(stored);
+    const now = Date.now();
+    const limit = 2 * 60 * 60 * 1000; // 2 jam
 
-	// checkout handler
-	function handleCheckout() {
-		if (selected.length === 0) {
-			alert("Belum pilih kursi!");
-			return;
-		}
+    // Hapus kursi yang sudah > 2 jam
+    for (const jam in parsed) {
+      parsed[jam] = parsed[jam].filter((item) => now - item.time < limit);
+    }
 
-		const updated = { ...bookings };
-		const current = new Set(updated[jamParam] || []);
-		selected.forEach((s) => current.add(s));
-		updated[jamParam] = Array.from(current);
+    setBookings(parsed);
+    localStorage.setItem("bookings", JSON.stringify(parsed));
+  }, []);
 
-		localStorage.setItem("bookings", JSON.stringify(updated));
+  // =====================
+  // SELECT SEAT
+  // =====================
+  function toggleSeat(seatId: string) {
+    setSelected((prev) => {
+      if (prev.includes(seatId)) return prev.filter((s) => s !== seatId);
+      return [...prev, seatId];
+    });
+  }
 
-		const today = new Date().toISOString().split("T")[0];
-		const orderSummary = {
-			film: filmParam,
-			jam: jamParam,
-			seats: selected,
-			hargaPerTiket: 65000,
-			biayaLayanan: 2500,
-			promo: 40000,
-			tanggal: today,
-		};
-		localStorage.setItem("lastOrder", JSON.stringify(orderSummary));
+  // =====================
+  // CHECKOUT LOGIC
+  // =====================
+  function handleCheckout() {
+    if (selected.length === 0) {
+      alert("Belum pilih kursi!");
+      return;
+    }
 
-		// navigate to summary page (ensure this route exists)
-		router.push("/ringkasan-pesanan");
-	}
+    const updated = { ...bookings };
+    const now = Date.now();
+    const current = updated[jamParam] || [];
 
-	function handleBack() {
-		router.push("/jadwal");
-	}
+    // simpan kursi + waktu ambil tiket
+    selected.forEach((s) => {
+      current.push({ seat: s, time: now });
+    });
 
-	// rendering seats
-	const rows = 5;
-	const cols = 8;
+    updated[jamParam] = current;
 
-	const isBooked = (seatId: string) => {
-		return (bookings[jamParam] || []).includes(seatId);
-	};
+    localStorage.setItem("bookings", JSON.stringify(updated));
 
-	return (
-		<main>
-			<link rel="stylesheet" href="/style/checkout.css" />
+    const today = new Date().toISOString().split("T")[0];
+    const orderSummary = {
+      film: filmParam,
+      jam: jamParam,
+      seats: selected,
+      hargaPerTiket: 65000,
+      biayaLayanan: 2500,
+      promo: 40000,
+      tanggal: today,
+    };
+    localStorage.setItem("lastOrder", JSON.stringify(orderSummary));
 
-			<header>
-				<span>Pemesanan Kursi Bioskop</span>
-			</header>
+    router.push("/ringkasan-pesanan");
+  }
 
-			<div className="container">
-				<div className="screen">LAYAR</div>
+  function handleBack() {
+    router.push("/jadwal");
+  }
 
-				<div id="seat-container">
-					{Array.from({ length: rows }).map((_, r) => (
-						<div className="row" key={r}>
-							{Array.from({ length: cols }).map((__, c) => {
-								const seatId = String.fromCharCode(65 + r) + (c + 1);
-								const booked = isBooked(seatId);
-								const sel = selected.includes(seatId);
+  // =====================
+  // RENDER SEATS
+  // =====================
+  const rows = 5;
+  const cols = 8;
 
-								return (
-									<div
-										key={seatId}
-										className={"seat" + (booked ? " booked" : sel ? " selected" : "")}
-										onClick={() => {
-											if (booked) return;
-											toggleSeat(seatId);
-										}}
-										data-seat={seatId}
-									>
-										{seatId}
-									</div>
-								);
-							})}
-						</div>
-					))}
-				</div>
+  // cek apakah kursi sudah dibooking
+  const isBooked = (seatId: string) => {
+    return (bookings[jamParam] || []).some((x) => x.seat === seatId);
+  };
 
-				<div className="info">
-					<h3>Kursi Dipilih:</h3>
-					<p id="selected-seats">{selected.length ? selected.join(", ") : "-"}</p>
-				</div>
+  return (
+    <main>
+      <link rel="stylesheet" href="/style/checkout.css" />
 
-				<div className="buttons">
-					<button id="checkoutBtn" className="checkout" onClick={handleCheckout}>
-						Checkout
-					</button>
-					<button id="backBtn" className="back" onClick={handleBack}>
-						Kembali ke Jadwal
-					</button>
-				</div>
-			</div>
+      <header>
+        <span>Pemesanan Kursi Bioskop</span>
+      </header>
 
-			<footer>
-				<p>Copyright Kelompok 4</p>
-			</footer>
-		</main>
-	);
+      <div className="container">
+        <div className="screen">LAYAR</div>
+
+        <div id="seat-container">
+          {Array.from({ length: rows }).map((_, r) => (
+            <div className="row" key={r}>
+              {Array.from({ length: cols }).map((__, c) => {
+                const seatId = String.fromCharCode(65 + r) + (c + 1);
+                const booked = isBooked(seatId);
+                const sel = selected.includes(seatId);
+
+                return (
+                  <div
+                    key={seatId}
+                    className={
+                      "seat" + (booked ? " booked" : sel ? " selected" : "")
+                    }
+                    onClick={() => {
+                      if (booked) return;
+                      toggleSeat(seatId);
+                    }}
+                    data-seat={seatId}
+                  >
+                    {seatId}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        <div className="info">
+          <h3>Kursi Dipilih:</h3>
+          <p id="selected-seats">
+            {selected.length ? selected.join(", ") : "-"}
+          </p>
+        </div>
+
+        <div className="buttons">
+          <button id="checkoutBtn" className="checkout" onClick={handleCheckout}>
+            Checkout
+          </button>
+          <button id="backBtn" className="back" onClick={handleBack}>
+            Kembali ke Jadwal
+          </button>
+        </div>
+      </div>
+
+      <footer>
+        <p>Copyright Kelompok 4</p>
+      </footer>
+    </main>
+  );
 }
-
