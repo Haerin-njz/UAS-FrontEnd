@@ -1,0 +1,97 @@
+@import url('/style/homepage.css');
+
+/* Top bar */
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 0;
+}
+
+.back-arrow {
+  text-decoration: none;
+  font-size: 1.4rem;
+  color: #333;
+}
+
+.signup-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 40px 0;
+}
+
+.avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.avatar-icon {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+}
+
+.signup-form {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  padding: 22px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-group label {
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.input-group input {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+}
+
+.password-wrapper {
+  display: flex;
+}
+
+.error-container {
+  min-height: 28px;
+}
+
+.signup-form button {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #333;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.login-link {
+  margin-top: 8px;
+  color: #444;
+}
+
+@media (max-width: 600px) {
+  .signup-form { max-width: 92%; }
+}
