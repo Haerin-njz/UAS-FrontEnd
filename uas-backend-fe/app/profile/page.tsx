@@ -1,11 +1,36 @@
-'use client';
+"use client";
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 import '../../public/style/profile.css';
 
 export default function ProfilePage() {
   const router = useRouter();
+
+  const [user] = useState<Record<string, any> | null>(() => {
+    try {
+      if (typeof window === 'undefined') return null;
+      const raw = localStorage.getItem('user');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  function handleLogout() {
+    try {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+    } catch {
+      // ignore
+    }
+    try { window.dispatchEvent(new Event('auth-changed')); } catch {}
+    router.push('/');
+  }
+
+  const displayName = user?.full_name || user?.name || 'Pengguna';
+  const displayEmail = user?.email || '—';
 
   return (
     <>
@@ -22,10 +47,13 @@ export default function ProfilePage() {
 
       <main className="container">
         <section className="profile-summary">
-          <div className="profile-picture"></div>
+          <div className="profile-picture">
+            {/* If you have an avatar URL in user.avatar you can render it here */}
+            <span className="initials">{(displayName || 'P').slice(0, 1)}</span>
+          </div>
           <div className="profile-info">
-            <h2 className="profile-name">User 01</h2>
-            <p className="profile-email">user@gmail.com</p>
+            <h2 className="profile-name">{displayName}</h2>
+            <p className="profile-email">{displayEmail}</p>
           </div>
         </section>
 
@@ -43,10 +71,10 @@ export default function ProfilePage() {
             </Link>
           </li>
           <li className="menu-item logout">
-            <Link href="/login">
+            <button onClick={handleLogout} className="logout-btn">
               <span>Log Out</span>
               <span className="arrow">&gt;</span>
-            </Link>
+            </button>
           </li>
         </ul>
       </main>
