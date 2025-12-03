@@ -2,132 +2,101 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-
-interface User {
-  id: number;
-  email: string;
-  full_name: string;
-  phone_number?: string;
-}
 
 export default function LoginPage() {
   const router = useRouter();
-  const [form, setForm] = useState({
-    email: "",
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    username: "",
     password: "",
   });
-  const [errors, setErrors] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setForm((s) => ({ ...s, [name]: value }));
-    // Clear errors when user starts typing
-    if (errors.length > 0) setErrors([]);
-  }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const nextErrors: string[] = [];
-
-    if (!form.email.trim()) nextErrors.push("Email is required");
-    if (!form.password) nextErrors.push("Password is required");
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (form.email && !emailRegex.test(form.email)) {
-      nextErrors.push("Invalid email format");
-    }
-
-    setErrors(nextErrors);
-
-    if (nextErrors.length === 0) {
-      setIsLoading(true);
-      try {
-        const response = await fetch("/api/auth/signin", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: form.email,
-            password: form.password,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          // Save token and user info
-          localStorage.setItem("token", data.token);
-          localStorage.setItem("user", JSON.stringify(data.user));
-
-          // Notify other components (navbar) that auth changed
-          try { window.dispatchEvent(new Event('auth-changed')); } catch {}
-
-          // Redirect to dashboard or home
-          router.push("/");
-        } else {
-          setErrors([data.error || "Login failed"]);
-        }
-      } catch (error) {
-        setErrors(["Network error: " + (error instanceof Error ? error.message : "Unknown error")]);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  }
+    console.log("Login Data:", formData);
+    // Tambahkan logika autentikasi di sini
+    router.push("/"); // Redirect ke home setelah login
+  };
 
   return (
-    <div className="login-container">
-      <form className="login-form" onSubmit={handleSubmit}>
-        <h2>Log In</h2>
+    <>
+      {/* Load CSS eksternal */}
+      <link rel="stylesheet" href="/style/login.css" />
+      <link 
+        rel="stylesheet" 
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" 
+      />
 
-        <div className="login-form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-          />
-        </div>
+      <div className="container">
+        <header className="top-bar">
+          {/* Tombol Back ke Home */}
+          <Link href="/" className="back-arrow">
+            &#x2190;
+          </Link>
+          <h1>Login</h1>
+        </header>
 
-        <div className="login-form-group">
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-          />
-        </div>
-
-        {errors.length > 0 && (
-          <div style={{ color: "#c00", marginBottom: "15px" }}>
-            <ul style={{ margin: 0, paddingLeft: "20px" }}>
-              {errors.map((err, i) => (
-                <li key={i}>{err}</li>
-              ))}
-            </ul>
+        <main className="login-content">
+          <div className="avatar">
+            <span className="material-symbols-outlined">
+              <Image
+                src="/img/icons/user.png" // Pastikan gambar ini ada di public/img/icons/
+                alt="Avatar"
+                width={150}
+                height={150}
+                className="avatar-icon"
+                priority
+              />
+            </span>
           </div>
-        )}
 
-        <button type="submit" className="login-btn" disabled={isLoading}>
-          {isLoading ? "Logging in..." : "Log In"}
-        </button>
+          <form id="login-form" className="login-form" onSubmit={handleSubmit} noValidate>
+            <div className="input-group">
+              <label htmlFor="username">Username</label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                required
+                value={formData.username}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="input-group">
+              <label htmlFor="password">Password</label>
+              <div className="password-wrapper">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  name="password"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+                <span
+                  className="material-symbols-outlined"
+                  id="togglePassword"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? "visibility_off" : "visibility"}
+                </span>
+              </div>
+            </div>
+            <button type="submit">Login</button>
+          </form>
 
-        <p className="login-link">
-          Belum punya akun? <Link href="/signup">Sign Up</Link>
-        </p>
-      </form>
-    </div>
+          <p className="signup-link">
+            Belum punya akun? <Link href="/signup">Sign up</Link>
+          </p>
+        </main>
+      </div>
+    </>
   );
 }

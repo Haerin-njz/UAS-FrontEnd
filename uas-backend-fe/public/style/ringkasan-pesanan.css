@@ -1,0 +1,174 @@
+/* File: public/style/ringkasan-pesanan.css */
+
+/* ============================================= */
+/* == KODE CSS UNTUK HALAMAN RINGKASAN PESANAN == */
+/* ==               (VERSI WEB)               == */
+/* ============================================= */
+
+/* Pengaturan dasar untuk body */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f7f4f0;
+    color: #333;
+    padding: 40px 20px; /* Memberi jarak atas-bawah di tampilan web */
+}
+
+/* ================================================= */
+/* PERUBAHAN 3: Container dibuat lebih lebar (web) */
+/* ================================================= */
+.order-container {
+    width: 100%;
+    max-width: 800px; /* Diperlebar untuk tampilan web */
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); /* Shadow sedikit diperhalus */
+    overflow: hidden;
+    margin: 0 auto;
+}
+
+/* ===================================================== */
+/* PERUBAHAN 4: Header diberi warna coklat dan teks putih */
+/* ===================================================== */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background-color: #967259; /* Warna Coklat Kayu */
+    color: #ffffff; /* Warna teks dan ikon menjadi putih */
+}
+
+.page-header a {
+    text-decoration: none;
+    color: #ffffff; /* Warna ikon menjadi putih */
+}
+
+.header-title {
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.material-symbols-outlined {
+    font-size: 28px;
+    vertical-align: middle;
+}
+
+.order-summary-card {
+    padding: 32px; /* Padding sedikit ditambah untuk layout lebih besar */
+}
+
+.order-summary-card h1 {
+    font-size: 1.75rem; /* Ukuran font judul diperbesar */
+    font-weight: 600;
+    margin-bottom: 24px;
+}
+
+.order-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.movie-poster {
+    width: 80px; /* Ukuran poster diperbesar */
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.item-details h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.separator {
+    border: none;
+    border-top: 1px solid #eaeaea;
+    margin: 24px 0;
+}
+
+.separator-dashed {
+    border: none;
+    border-top: 1px dashed #ccc;
+    margin: 24px 0;
+}
+
+.payment-details h3, .promo-details h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.payment-row, .promo-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 14px;
+}
+
+.payment-row:last-child {
+    margin-bottom: 0;
+}
+
+.payment-row.total {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #eaeaea;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.promo-row {
+    font-size: 1rem;
+}
+
+.voucher-code {
+    font-weight: 500;
+    background-color: #e9f5e9;
+    color: #4CAF50;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.voucher-amount {
+    color: #d9534f;
+    font-weight: 500;
+}
+
+.remove-promo {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #888;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+}
+
+.remove-promo:hover {
+    color: #333;
+}
+
+.action-button-container {
+    margin-top: 32px;
+}
+
+.btn-continue {
+    width: 100%;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #444;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-continue:hover {
+    background-color: #f8f8f8;
+    border-color: #aaa;
+}
