@@ -175,10 +175,6 @@ export default function CheckoutPage() {
           </button>
         </div>
       </div>
-
-      <footer>
-        <p>Copyright Kelompok 4</p>
-      </footer>
     </main>
   );
 }
