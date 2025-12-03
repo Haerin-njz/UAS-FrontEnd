@@ -14,6 +14,8 @@ export default function SignupPage() {
     email: "",
   });
   const [errors, setErrors] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     const link = document.createElement("link");
@@ -28,22 +30,66 @@ export default function SignupPage() {
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
     setForm((s) => ({ ...s, [name]: value }));
+    // Clear errors when user starts typing
+    if (errors.length > 0) setErrors([]);
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const nextErrors: string[] = [];
-    if (!form.username.trim()) nextErrors.push("Username is required");
+    
+    if (!form.username.trim()) nextErrors.push("Username/Full name is required");
     if (!form.password) nextErrors.push("Password is required");
+    if (form.password.length < 6) nextErrors.push("Password must be at least 6 characters");
     if (form.password !== form.confirmPassword)
       nextErrors.push("Passwords do not match");
     if (!form.phone.trim()) nextErrors.push("Phone is required");
     if (!form.email.trim()) nextErrors.push("Email is required");
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (form.email && !emailRegex.test(form.email)) {
+      nextErrors.push("Invalid email format");
+    }
+
     setErrors(nextErrors);
+    
     if (nextErrors.length === 0) {
-      // TODO: call signup API here. For now, redirect to login on success.
-      router.push("/login");
+      setIsLoading(true);
+      try {
+        const response = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: form.email,
+            password: form.password,
+            full_name: form.username,
+            phone_number: form.phone,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          setSuccessMessage("✓ Sign up successful! Redirecting to login...");
+          // Save token to localStorage
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("user", JSON.stringify(data.user));
+          
+          // Redirect to login after 1.5 seconds
+          setTimeout(() => {
+            router.push("/login");
+          }, 1500);
+        } else {
+          setErrors([data.error || "Sign up failed"]);
+        }
+      } catch (error) {
+        setErrors(["Network error: " + (error instanceof Error ? error.message : "Unknown error")]);
+      } finally {
+        setIsLoading(false);
+      }
     }
   }
 
@@ -61,7 +107,7 @@ export default function SignupPage() {
 
         <form id="signup-form" className="signup-form" noValidate onSubmit={handleSubmit}>
           <div className="input-group">
-            <label htmlFor="username">Username</label>
+            <label htmlFor="username">Full Name</label>
             <input
               type="text"
               id="username"
@@ -69,6 +115,20 @@ export default function SignupPage() {
               value={form.username}
               onChange={handleChange}
               required
+              disabled={isLoading}
+            />
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+              disabled={isLoading}
             />
           </div>
 
@@ -82,6 +142,7 @@ export default function SignupPage() {
                 value={form.password}
                 onChange={handleChange}
                 required
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -96,6 +157,7 @@ export default function SignupPage() {
                 value={form.confirmPassword}
                 onChange={handleChange}
                 required
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -109,20 +171,15 @@ export default function SignupPage() {
               value={form.phone}
               onChange={handleChange}
               required
+              disabled={isLoading}
             />
           </div>
 
-          <div className="input-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          {successMessage && (
+            <div style={{ color: "green", padding: "10px", textAlign: "center" }}>
+              {successMessage}
+            </div>
+          )}
 
           <div id="error-messages" className="error-container">
             {errors.length > 0 && (
@@ -136,7 +193,9 @@ export default function SignupPage() {
             )}
           </div>
 
-          <button type="submit">Sign Up</button>
+          <button type="submit" disabled={isLoading}>
+            {isLoading ? "Signing up..." : "Sign Up"}
+          </button>
         </form>
 
         <p className="login-link">

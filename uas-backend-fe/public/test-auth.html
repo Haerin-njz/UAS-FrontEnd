@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sign Up & Sign In</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 14px;
+            word-wrap: break-word;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .data-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+
+        .data-display pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #333;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sign Up Section -->
+        <div class="card">
+            <h2>📝 Sign Up</h2>
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" placeholder="user@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="minimal 6 karakter" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupName">Nama Lengkap</label>
+                    <input type="text" id="signupName" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPhone">No. Telepon (opsional)</label>
+                    <input type="tel" id="signupPhone" placeholder="08123456789">
+                </div>
+                <button type="submit">Sign Up <span class="loading" id="signupLoading" style="display:none;"></span></button>
+            </form>
+            <div id="signupMessage"></div>
+        </div>
+
+        <!-- Sign In Section -->
+        <div class="card">
+            <h2>🔐 Sign In</h2>
+            <form id="signinForm">
+                <div class="form-group">
+                    <label for="signinEmail">Email</label>
+                    <input type="email" id="signinEmail" placeholder="user@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="signinPassword">Password</label>
+                    <input type="password" id="signinPassword" placeholder="password anda" required>
+                </div>
+                <button type="submit">Sign In <span class="loading" id="signinLoading" style="display:none;"></span></button>
+            </form>
+            <div id="signinMessage"></div>
+        </div>
+    </div>
+
+    <!-- Check Users Data Section -->
+    <div style="position: fixed; bottom: 20px; right: 20px;">
+        <button onclick="checkAllUsers()" style="width: 200px; padding: 10px; background: #28a745;">
+            👥 Check All Users
+        </button>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+
+        // Sign Up Handler
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const fullName = document.getElementById('signupName').value;
+            const phoneNumber = document.getElementById('signupPhone').value;
+
+            const loading = document.getElementById('signupLoading');
+            loading.style.display = 'inline-block';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/signup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        full_name: fullName,
+                        phone_number: phoneNumber,
+                    }),
+                });
+
+                const data = await response.json();
+                const messageEl = document.getElementById('signupMessage');
+
+                if (response.ok) {
+                    messageEl.className = 'message success';
+                    messageEl.innerHTML = `
+                        <strong>✅ ${data.message}</strong><br><br>
+                        Token: ${data.token.substring(0, 50)}...<br>
+                        User ID: ${data.user.id}<br>
+                        Email: ${data.user.email}
+                    `;
+                    document.getElementById('signupForm').reset();
+                    localStorage.setItem('token', data.token);
+                } else {
+                    messageEl.className = 'message error';
+                    messageEl.textContent = `❌ ${data.error}`;
+                }
+            } catch (error) {
+                document.getElementById('signupMessage').className = 'message error';
+                document.getElementById('signupMessage').textContent = `❌ Error: ${error.message}`;
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+
+        // Sign In Handler
+        document.getElementById('signinForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('signinEmail').value;
+            const password = document.getElementById('signinPassword').value;
+
+            const loading = document.getElementById('signinLoading');
+            loading.style.display = 'inline-block';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/signin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                    }),
+                });
+
+                const data = await response.json();
+                const messageEl = document.getElementById('signinMessage');
+
+                if (response.ok) {
+                    messageEl.className = 'message success';
+                    messageEl.innerHTML = `
+                        <strong>✅ ${data.message}</strong><br><br>
+                        User ID: ${data.user.id}<br>
+                        Name: ${data.user.full_name}<br>
+                        Email: ${data.user.email}<br>
+                        Phone: ${data.user.phone_number || 'N/A'}
+                    `;
+                    document.getElementById('signinForm').reset();
+                    localStorage.setItem('token', data.token);
+                } else {
+                    messageEl.className = 'message error';
+                    messageEl.textContent = `❌ ${data.error}`;
+                }
+            } catch (error) {
+                document.getElementById('signinMessage').className = 'message error';
+                document.getElementById('signinMessage').textContent = `❌ Error: ${error.message}`;
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+
+        // Check All Users
+        async function checkAllUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/users`);
+                const data = await response.json();
+
+                const html = `
+                    <div class="card">
+                        <h2>👥 Data Semua Users</h2>
+                        <p>Total Users: <strong>${data.count}</strong></p>
+                        <div class="data-display">
+                            <pre>${JSON.stringify(data.users, null, 2)}</pre>
+                        </div>
+                    </div>
+                `;
+
+                // Show in a modal or new section
+                let modal = document.getElementById('usersModal');
+                if (!modal) {
+                    modal = document.createElement('div');
+                    modal.id = 'usersModal';
+                    modal.style.cssText = `
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        max-width: 600px;
+                        width: 90%;
+                        max-height: 80vh;
+                        overflow-y: auto;
+                        z-index: 1000;
+                        background: white;
+                        padding: 30px;
+                        border-radius: 10px;
+                        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                    `;
+                    document.body.appendChild(modal);
+                }
+
+                modal.innerHTML = html + `<button onclick="document.getElementById('usersModal').style.display='none'; document.getElementById('overlay').style.display='none';" style="margin-top: 20px;">Close</button>`;
+                modal.style.display = 'block';
+
+                let overlay = document.getElementById('overlay');
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.id = 'overlay';
+                    overlay.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: rgba(0, 0, 0, 0.5);
+                        z-index: 999;
+                    `;
+                    overlay.onclick = () => {
+                        overlay.style.display = 'none';
+                        modal.style.display = 'none';
+                    };
+                    document.body.appendChild(overlay);
+                } else {
+                    overlay.style.display = 'block';
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>
