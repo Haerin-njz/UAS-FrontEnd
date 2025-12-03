@@ -25,7 +25,7 @@ export default function LoginPage() {
   useEffect(() => {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "/style/sign-up.css";
+    link.href = "/style/login.css";
     document.head.appendChild(link);
     return () => {
       if (document.head.contains(link)) document.head.removeChild(link);

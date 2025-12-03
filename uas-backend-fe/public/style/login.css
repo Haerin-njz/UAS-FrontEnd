@@ -1,158 +1,97 @@
-/* --- General Styling & Font --- */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+@import url('/style/homepage.css');
 
-body {
-    font-family: 'Poppins', 'Segoe UI', Tahoma, sans-serif;
-    background-color: #f0f2f5;
-    color: #333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-}
-
-/* --- Main Container --- */
-.container {
-    width: 100%;
-    max-width: 420px;
-    background-color: #ffffff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-/* --- Top Bar / Header --- */
+/* Top bar */
 .top-bar {
-    display: flex;
-    align-items: center;
-    padding: 16px 20px;
-    background-color: #F2D4A9;
-}
-
-.top-bar h1 {
-    flex-grow: 1;
-    text-align: center;
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-    /* Negative margin ini yang sebelumnya menutupi tombol back */
-    margin-left: -28px; 
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 0;
 }
 
 .back-arrow {
-    font-size: 28px;
-    font-weight: bold;
-    text-decoration: none;
-    color: #333;
-    /* PERBAIKAN: Agar tombol back bisa dipencet */
-    position: relative;
-    z-index: 10; 
-    cursor: pointer;
+  text-decoration: none;
+  font-size: 1.4rem;
+  color: #333;
 }
 
-/* --- Main Content (Avatar & Form) --- */
 .login-content {
-    padding: 24px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 40px 0;
 }
 
 .avatar {
-    text-align: center;
-    margin-bottom: 24px;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-/* Jika menggunakan Next/Image, styling img ini mungkin perlu disesuaikan dengan classnya */
 .avatar-icon {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
 }
 
-/* --- Form Styling --- */
 .login-form {
-    background-color: #F2D4A9;
-    padding: 24px;
-    border-radius: 8px;
-    box-shadow: 0 6px 10px -4px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  padding: 22px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .input-group {
-    margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .input-group label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 500;
-    color: #444;
+  font-size: 0.95rem;
+  color: #333;
 }
 
 .input-group input {
-    width: 100%;
-    padding: 12px 15px;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
 }
 
-.input-group input:focus {
-    outline: 2px solid #7356BF;
-}
-
-/* --- Password Field with Icon --- */
 .password-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
+  display: flex;
 }
 
-.password-wrapper input {
-    padding-right: 45px;
+.error-container {
+  min-height: 28px;
 }
 
-.password-wrapper .material-symbols-outlined {
-    position: absolute;
-    right: 12px;
-    color: #888;
-    cursor: pointer;
-    user-select: none;
+.login-form button {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #333;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
 }
 
-/* --- Button & Bottom Link --- */
-button[type="submit"] {
-    width: 100%;
-    padding: 14px;
-    margin-top: 20px;
-    background-color: #e0ac69;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+.login-link {
+  margin-top: 8px;
+  color: #444;
 }
 
-button[type="submit"]:hover {
-    background-color: #d4a060;
-}
-
-.signup-link {
-    text-align: center;
-    margin-top: 24px;
-    font-size: 15px;
-}
-
-.signup-link a {
-    color: #7356BF;
-    font-weight: bold;
-    text-decoration: none;
-}
-
-.signup-link a:hover {
-    text-decoration: underline;
+@media (max-width: 600px) {
+  .login-form { max-width: 92%; }
 }
