@@ -6,16 +6,16 @@ import { Container, Row, Col } from "react-bootstrap";
 import { useRef } from "react";
 
 const films = [
-  { href: "/index/detail-film.html", img: "/img/Gambar-Onepiece.jpg", alt: "Film 1" },
-  { href: "/index/detail-film2.html", img: "/img/Gambar-Frieren.jpg", alt: "Film 2" },
-  { href: "#", img: "/img/Gambar-Wednesday.jpg", alt: "Film 3" },
-  { href: "#", img: "/img/Gambar-StrangerThings5.jpg", alt: "Film 4" },
-  { href: "#", img: "/img/Gambar-Starwars.jpg", alt: "Film 5" },
-  { href: "#", img: "/img/Gambar-Avengers.jpg", alt: "Film 6" },
-  { href: "#", img: "/img/Gambar-Spiderman.jpg", alt: "Film 7" },
-  { href: "#", img: "/img/Gambar-Forrestgump.jpg", alt: "Film 8" },
-  { href: "#", img: "/img/Gambar-Goodwillhunting.jpg", alt: "Film 9" },
-  { href: "#", img: "/img/Gambar-Savingpvtryan.jpg", alt: "Film 10" },
+  { slug: 'onepiece', img: "/img/Gambar-Onepiece.jpg", alt: "One Piece" },
+  { slug: 'frieren', img: "/img/Gambar-Frieren.jpg", alt: "Frieren" },
+  { slug: 'wednesday', img: "/img/Gambar-Wednesday.jpg", alt: "Wednesday" },
+  { slug: 'stranger-things-5', img: "/img/Gambar-StrangerThings5.jpg", alt: "Stranger Things 5" },
+  { slug: 'star-wars', img: "/img/Gambar-Starwars.jpg", alt: "Star Wars" },
+  { slug: 'avengers', img: "/img/Gambar-Avengers.jpg", alt: "Avengers" },
+  { slug: 'spiderman', img: "/img/Gambar-Spiderman.jpg", alt: "Spiderman" },
+  { slug: 'forrest-gump', img: "/img/Gambar-Forrestgump.jpg", alt: "Forrest Gump" },
+  { slug: 'good-will-hunting', img: "/img/Gambar-Goodwillhunting.jpg", alt: "Good Will Hunting" },
+  { slug: 'saving-private-ryan', img: "/img/Gambar-Savingpvtryan.jpg", alt: "Saving Private Ryan" },
 ];
 
 export default function FilmSection() {
@@ -56,7 +56,7 @@ export default function FilmSection() {
           >
             {films.map((film, index) => (
               <div key={index} className="list-film flex-shrink-0" style={{ minWidth: "200px" }}>
-                <Link href={film.href}>
+                <Link href={`/film/${film.slug}`}>
                   <Image
                     src={film.img}
                     alt={film.alt}
