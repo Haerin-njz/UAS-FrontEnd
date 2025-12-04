@@ -12,7 +12,7 @@ export default function Footer() {
 
         {/* Navigation */}
         <div className="flex gap-6 text-sm opacity-80">
-          <a href="/" className="hover:opacity-100 transition">Home</a>
+          <a href="/homepage" className="hover:opacity-100 transition">Home</a>
           <a href="/movies" className="hover:opacity-100 transition">Movies</a>
           <a href="/history" className="hover:opacity-100 transition">History</a>
           <a href="/profile" className="hover:opacity-100 transition">Profile</a>
