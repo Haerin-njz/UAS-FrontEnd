@@ -166,13 +166,15 @@ export default function CheckoutPage() {
           </p>
         </div>
 
-        <div className="buttons">
-          <button id="checkoutBtn" className="checkout" onClick={handleCheckout}>
-            Checkout
-          </button>
-          <button id="backBtn" className="back" onClick={handleBack}>
-            Kembali ke Jadwal
-          </button>
+        <div className="cta-fixed">
+          <div className="container">
+            <button id="backBtn" className="back" onClick={handleBack}>
+              Ubah Jadwal
+            </button>
+            <button id="checkoutBtn" className="checkout" onClick={handleCheckout}>
+              Pesan Tiket
+            </button>
+          </div>
         </div>
       </div>
     </main>

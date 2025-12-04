@@ -59,7 +59,7 @@ export default async function FilmDetailPage({ params }: Props) {
         </div>
       </section>
 
-      <div className="cta-section">
+      <div className="cta-fixed">
         <div className="container">
           <Link href="/jadwal" className="btn-pesan">Lihat Jadwal & Pesan Tiket</Link>
         </div>
