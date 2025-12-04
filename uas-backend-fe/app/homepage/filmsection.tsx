@@ -6,7 +6,7 @@ import { Container, Row, Col } from "react-bootstrap";
 import { useRef } from "react";
 
 const films = [
-  { slug: 'onepiece', img: "/img/Gambar-Onepiece.jpg", alt: "One Piece" },
+  { slug: 'one-piece-red', img: "/img/Gambar-Onepiece.jpg", alt: "One Piece" },
   { slug: 'frieren', img: "/img/Gambar-Frieren.jpg", alt: "Frieren" },
   { slug: 'wednesday', img: "/img/Gambar-Wednesday.jpg", alt: "Wednesday" },
   { slug: 'stranger-things-5', img: "/img/Gambar-StrangerThings5.jpg", alt: "Stranger Things 5" },

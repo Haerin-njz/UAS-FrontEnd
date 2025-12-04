@@ -101,8 +101,11 @@ export default function SignupPage() {
       </header>
 
       <main className="signup-content">
-        <div className="avatar">
-          <img src="/img/icons/user.png" alt="Avatar" className="avatar-icon" />
+        <div className="avatar-section">
+          <h1>Sign up</h1>
+          <div className="avatar">
+            <img src="/img/icons/user.png" alt="Avatar" className="avatar-icon" />
+          </div>
         </div>
 
         <form id="signup-form" className="signup-form" noValidate onSubmit={handleSubmit}>
