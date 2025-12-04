@@ -51,7 +51,7 @@ export default function RiwayatPesananPage() {
                     >
                         ← Kembali
                     </button>
-                    <div className="text-2xl font-bold text-gray-800">UTS Front END</div>
+                    <div className="text-2xl font-bold text-gray-800">UAS Front END</div>
                     <div id="user-icon" style={{ display: "none" }} />
                 </div>
             </header>
