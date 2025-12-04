@@ -21,7 +21,7 @@ export default function JadwalPage() {
             display: inline-block;
             margin: 25px 40px 0 40px;
             padding: 10px 20px;
-            background-color: #E6B980;
+            background-color: #f2ecd6e7;
             color: #000;
             font-weight: bold;
             border-radius: 8px;
@@ -32,7 +32,7 @@ export default function JadwalPage() {
           }
 
           .back-button:hover {
-            background-color: #dba96b;
+            background-color:  #f2ecd6e7;
             transform: scale(1.05);
           }
 

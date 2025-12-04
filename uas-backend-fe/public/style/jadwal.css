@@ -24,7 +24,7 @@ header {
   align-items: center;
   justify-content: center;
   padding: 28px 16px;
-  background: linear-gradient(90deg, #ffcf9a, #f2b67a);
+  background: linear-gradient(90deg, #f2ecd6e7, #f2ecd6e7);
   color: #0b1320;
   font-weight: 700;
   letter-spacing: 0.4px;
@@ -52,7 +52,7 @@ header {
   margin: 18px 0;
   padding: 10px 14px;
   background: rgba(255, 207, 154, 0.12);
-  color: #ffd7b8;
+  color: #f2ecd6e7  ;
   font-weight: 600;
   border-radius: 10px;
   text-decoration: none;

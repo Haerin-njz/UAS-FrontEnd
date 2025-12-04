@@ -100,6 +100,7 @@ export default function CheckoutPage() {
       film: filmParam,
       jam: jamParam,
       seats: selected,
+      quantity: selected.length,
       hargaPerTiket: HARGA_PER_TIKET,
       biayaLayanan: BIAYA_LAYANAN,
       promo: PROMO_DEFAULT,

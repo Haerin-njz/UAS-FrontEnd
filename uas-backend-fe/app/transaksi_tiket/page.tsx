@@ -1,12 +1,15 @@
 'use client';
 
-import React, { useState, FormEvent } from "react";
+import React, { useState, FormEvent, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
 
 export default function BeliTiketPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+
   const [quantity, setQuantity] = useState(1);
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isError, setIsError] = useState(false);
@@ -16,21 +19,69 @@ export default function BeliTiketPage() {
   const [cardNumber, setCardNumber] = useState('');
   const [cardName, setCardName] = useState('');
   const [expiry, setExpiry] = useState('');
-  const [cvv, setCvv] = useState('');
+  const [cvv, setCvv] = useState(''); 
   const [bankName, setBankName] = useState('BCA');
 
   // minimal film/poster info so orders saved to DB include film details
   const [film, setFilm] = useState('One Piece Film: Red');
   const [poster, setPoster] = useState('/img/Gambar-Onepiece.jpg');
 
+  // checkout quantity
+  const [checkoutQuantity, setCheckoutQuantity] = useState<number>(1);
+  const [checkoutSeats, setCheckoutSeats] = useState<string[]>([]);
+
+  // Prefill name/email from localStorage (same as profile page)
+  useEffect(() => {
+	try {
+		if (typeof window !== 'undefined') {
+			// Read user from localStorage
+			const raw = localStorage.getItem('user');
+			if (raw) {
+				const user = JSON.parse(raw);
+				if (user?.full_name && !name) setName(user.full_name);
+				if (user?.email && !email) setEmail(user.email);
+			}
+		}
+	} catch {
+		// ignore
+	}
+
+	// read checkout info from localStorage (key "lastOrder")
+	try {
+		if (typeof window !== 'undefined') {
+			const raw = localStorage.getItem('lastOrder');
+			if (raw) {
+				const parsed = JSON.parse(raw);
+				if (parsed?.quantity) setCheckoutQuantity(Number(parsed.quantity));
+				if (parsed?.seats && Array.isArray(parsed.seats)) setCheckoutSeats(parsed.seats);
+				if (parsed?.film) setFilm(parsed.film);
+				if (parsed?.poster) setPoster(parsed.poster);
+			} else {
+				// fallback to URL param ?qty=
+				const params = new URLSearchParams(window.location.search);
+				const qty = params.get('qty');
+				if (qty) setCheckoutQuantity(Math.max(1, Number(qty)));
+			}
+		}
+	} catch {}
+}, []);
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setIsLoading(true);
     setMessage(null);
 
+    // require logged-in user info (we derive from cookies)
+    if (!name || !email) {
+      setIsError(true);
+      setMessage('Silakan login terlebih dahulu untuk melanjutkan pembayaran.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const purchaseData: any = {
-        quantity,
+        quantity: checkoutQuantity,
         name,
         email,
         paymentMethod,
@@ -59,7 +110,7 @@ export default function BeliTiketPage() {
             date: new Date().toISOString(),
             name,
             email,
-            quantity,
+            quantity: checkoutQuantity,
             paymentMethod,
             payment: paymentMethod === 'card'
               ? { provider: 'card', amount: 0, status: 'completed', details: { last4: cardNumber.slice(-4) } }
@@ -72,15 +123,20 @@ export default function BeliTiketPage() {
         // console.warn('Failed to save order to DB:', apiErr);
       }
 
+      // reset fields
       setName('');
       setEmail('');
-      setQuantity(1);
+      // reset checkout quantity (keep default 1)
+      setCheckoutQuantity(1);
       setPaymentMethod('card');
       setCardNumber('');
       setCardName('');
       setExpiry('');
       setCvv('');
       setBankName('BCA');
+
+      // redirect to homepage immediately after successful purchase
+      router.push('/');
 
     } catch (err) {
       setIsError(true);
@@ -145,43 +201,39 @@ export default function BeliTiketPage() {
               style={{ width: "100%", display: "flex", flexDirection: "column", gap: 16 }}
             >
 
-              {/* --- INPUT GROUP WRAPPER --- */}
+              {/* --- ACCOUNT & ORDER SUMMARY (read-only) --- */}
               <div className="input-group">
-                <label htmlFor="name">Nama Lengkap:</label>
-                <input
-                  type="text"
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
+                <label>Akun:</label>
+                <div style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #ddd', background: '#fff' }}>
+                  { name ? (
+                    <span>
+                      <Link href="/profile" className="text-gray-900 font-medium">{name}</Link>
+                      <small style={{ color: '#6b7280' }}> ({email})</small>
+                      <div style={{ marginTop: 6 }}>
+                        <Link href="/profile" className="text-amber-600">Lihat Profil</Link>
+                      </div>
+                    </span>
+                  ) : (
+                    <span>
+                      Belum login —{" "}
+                      <Link href="/login" className="text-amber-600">Login</Link>
+                      <span style={{ margin: '0 8px' }}>|</span>
+                      <Link href="/signup" className="text-amber-600">Sign Up</Link>
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="input-group">
-                <label htmlFor="email">Email:</label>
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="input-group">
-                <label htmlFor="quantity">Jumlah Tiket:</label>
-                <input
-                  type="number"
-                  id="quantity"
-                  value={quantity}
-                  onChange={(e) => setQuantity(Number(e.target.value))}
-                  min={1}
-                  max={10}
-                  required
-                  disabled={isLoading}
-                />
+                <label>Ringkasan Pesanan (Jumlah):</label>
+                <div style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid #ddd', background: '#fff' }}>
+                  <div>{checkoutQuantity} tiket</div>
+                  {checkoutSeats.length > 0 && (
+                    <small style={{ color: '#6b7280', display: 'block', marginTop: 4 }}>
+                      Kursi: {checkoutSeats.join(', ')}
+                    </small>
+                  )}
+                </div>
               </div>
 
               {/* Payment Method */}

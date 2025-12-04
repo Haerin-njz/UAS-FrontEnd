@@ -37,8 +37,8 @@ export default function ProfilePage() {
       <header className="header">
         <button
           className="back-btn"
-          onClick={() => router.back()}
-          aria-label="Kembali"
+          onClick={() => router.push('/')}
+          aria-label="Kembali ke Home"
         >
           ←
         </button>
