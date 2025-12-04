@@ -1,6 +1,7 @@
 import sqlite3 from 'sqlite3';
 import path from 'path';
 import fs from 'fs';
+import { runMigrations } from './migrate';
 
 const dbDir = path.join(process.cwd(), 'db');
 const dbPath = path.join(dbDir, 'cinema.db');
@@ -26,7 +27,7 @@ dbSync.serialize(() => {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
-  `, (err) => {
+  `, (err: Error | null) => {
     if (err) {
       console.error('❌ Error creating users table:', err.message);
     } else {
@@ -45,12 +46,19 @@ dbSync.serialize(() => {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(user_id) REFERENCES users(id)
     )
-  `, (err) => {
+  `, (err: Error | null) => {
     if (err) {
       console.error('❌ Error creating transactions table:', err.message);
     } else {
       console.log('✓ Transactions table ready');
     }
+  });
+
+  // Run migrations for ticketing system
+  runMigrations().then(() => {
+    console.log('✅ Ticketing schema migrations complete');
+  }).catch((err) => {
+    console.error('❌ Migration error:', err);
   });
 });
 
