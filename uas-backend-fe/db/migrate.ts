@@ -1,12 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-import db from './database';
+import sqlite3 from 'sqlite3';
 
 /**
  * Run all migration files from db/migrations directory
  * Migrations are executed in alphanumeric order (001_, 002_, etc.)
  */
-export function runMigrations() {
+export function runMigrations(db: sqlite3.Database) {
   return new Promise<void>((resolve, reject) => {
     const migrationsDir = path.join(process.cwd(), 'db', 'migrations');
 

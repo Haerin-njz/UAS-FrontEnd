@@ -282,6 +282,22 @@
                     <div class="label">Total Users</div>
                 </div>
                 <div class="stat-box">
+                    <div class="number" id="totalMovies">0</div>
+                    <div class="label">Total Movies</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" id="totalScreenings">0</div>
+                    <div class="label">Total Screenings</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" id="totalBookings">0</div>
+                    <div class="label">Total Bookings</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" id="totalRevenue">0</div>
+                    <div class="label">Revenue (IDR)</div>
+                </div>
+                <div class="stat-box">
                     <div class="number" id="lastUpdate">-</div>
                     <div class="label">Last Update</div>
                 </div>
@@ -301,7 +317,7 @@
     </div>
 
     <script>
-        const API_URL = '/api/auth/check-db';
+        const API_URL = '/api/admin/summary';
 
         async function fetchData() {
             const loadingDiv = document.getElementById('loading');
@@ -324,7 +340,27 @@
                     showMessage('❌ ' + data.error, 'error');
                 }
             } catch (error) {
-                showMessage('❌ Error: ' + error.message, 'error');
+                // If admin summary fails (server route not ready), try fallback to existing check-db endpoint
+                try {
+                    const fallbackRes = await fetch('/api/auth/check-db');
+                    const fallbackData = await fallbackRes.json();
+                    if (fallbackRes.ok) {
+                        // Map fallback to minimal admin-like shape
+                        const mapped = {
+                            timestamp: fallbackData.timestamp || new Date().toISOString(),
+                            totals: { users: fallbackData.total_users || 0, movies: 0, screenings: 0, bookings: 0, revenue: 0 },
+                            users: fallbackData.users || [],
+                            movies: [], screenings: [], auditoriums: [], seats: [], bookings: [], tickets: [], payments: [], seat_locks: [], promotions: []
+                        };
+                        displayData(mapped);
+                        showMessage('ℹ️ Admin summary failed, loaded user data from check-db', 'success');
+                    } else {
+                        showMessage('❌ Failed to fetch admin summary', 'error');
+                    }
+                } catch (fallbackErr) {
+                    showMessage('❌ Failed to fetch admin summary', 'error');
+                    console.error('Summary fetch error and fallback failed:', error, fallbackErr);
+                }
             } finally {
                 loadingDiv.style.display = 'none';
                 updateRefreshTime();
@@ -332,60 +368,137 @@
         }
 
         function displayData(data) {
-            const totalUsersEl = document.getElementById('totalUsers');
             const tableContainer = document.getElementById('tableContainer');
 
-            totalUsersEl.textContent = data.total_users;
+            const totals = data.totals || {};
+            document.getElementById('totalUsers').textContent = totals.users || 0;
+            document.getElementById('totalMovies').textContent = totals.movies || 0;
+            document.getElementById('totalScreenings').textContent = totals.screenings || 0;
+            document.getElementById('totalBookings').textContent = totals.bookings || 0;
+            document.getElementById('totalRevenue').textContent = Intl.NumberFormat('id-ID').format(totals.revenue || 0);
+            document.getElementById('lastUpdate').textContent = new Date(data.timestamp).toLocaleString('id-ID');
 
-            if (data.users.length === 0) {
-                tableContainer.innerHTML = `
-                    <div class="empty">
-                        <p>📭 Belum ada user terdaftar</p>
-                    </div>
-                `;
-                return;
-            }
+            // store columns per-section for export
+            window._columnsMap = window._columnsMap || {};
 
-            let tableHTML = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Email</th>
-                            <th>Nama Lengkap</th>
-                            <th>No. Telepon</th>
-                            <th>Terdaftar</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+            function renderTable(title, key, columns, rows) {
+                // save columns map for export
+                window._columnsMap[key] = columns;
 
-            data.users.forEach(user => {
-                const createdDate = new Date(user.created_at).toLocaleDateString('id-ID', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
+                if (!rows || rows.length === 0) {
+                    return `
+                        <div class="card">
+                            <h2>${title}</h2>
+                            <div style="margin-top:8px"><button class="secondary" onclick="exportTable('${key}')">📥 Export CSV</button></div>
+                            <div class="empty">Tidak ada data</div>
+                        </div>
+                    `;
+                }
+
+                let html = `
+                    <div class="card">
+                        <h2>${title}</h2>
+                        <div style="margin-top:8px"><button class="secondary" onclick="exportTable('${key}')">📥 Export CSV</button></div>
+                        <table>
+                            <thead>
+                                <tr>`;
+                columns.forEach(col => { html += `<th>${col.label}</th>`; });
+                html += `</tr>
+                            </thead>
+                            <tbody>`;
+
+                rows.forEach(r => {
+                    html += '<tr>';
+                    columns.forEach(col => {
+                        const val = col.render ? col.render(r) : (r[col.key] ?? '-');
+                        html += `<td>${val}</td>`;
+                    });
+                    html += '</tr>';
                 });
 
-                tableHTML += `
-                    <tr>
-                        <td><span class="badge">#${user.id}</span></td>
-                        <td>${user.email}</td>
-                        <td>${user.full_name}</td>
-                        <td>${user.phone_number || '-'}</td>
-                        <td>${createdDate}</td>
-                    </tr>
-                `;
-            });
+                html += `</tbody></table></div>`;
+                return html;
+            }
 
-            tableHTML += `
-                    </tbody>
-                </table>
+            // save last fetched data for exports and actions
+            window._adminData = data;
+
+            // Compose sections
+            let out = '';
+
+            // Users
+            out += renderTable('👥 Users', 'users', [
+                { key: 'id', label: 'ID' },
+                { key: 'email', label: 'Email' },
+                { key: 'full_name', label: 'Nama' },
+                { key: 'phone_number', label: 'Telepon' },
+                { key: 'created_at', label: 'Terdaftar', render: (r) => new Date(r.created_at).toLocaleString('id-ID') }
+            ], data.users);
+
+            // Bookings (placeholder — paginated)
+            out += `
+                <div class="card" id="bookings-section">
+                    <h2>🎟️ Bookings</h2>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;" id="bookings-controls">
+                        <label>From: <input type="date" id="bookings-from"></label>
+                        <label>To: <input type="date" id="bookings-to"></label>
+                        <label>Status: <input id="bookings-status" placeholder="pending/confirmed/cancelled"></label>
+                        <button class="secondary" onclick="loadBookingsPage(1)">Apply</button>
+                        <button class="secondary" onclick="exportTable('bookings')">📥 Export CSV</button>
+                    </div>
+                    <div id="bookings-table">Memuat bookings...</div>
+                </div>
             `;
 
-            tableContainer.innerHTML = tableHTML;
+            // Payments (placeholder — paginated)
+            out += `
+                <div class="card" id="payments-section">
+                    <h2>💳 Payments</h2>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;" id="payments-controls">
+                        <label>From: <input type="date" id="payments-from"></label>
+                        <label>To: <input type="date" id="payments-to"></label>
+                        <label>Status: <input id="payments-status" placeholder="pending/paid/failed"></label>
+                        <button class="secondary" onclick="loadPaymentsPage(1)">Apply</button>
+                        <button class="secondary" onclick="exportTable('payments')">📥 Export CSV</button>
+                    </div>
+                    <div id="payments-table">Memuat payments...</div>
+                </div>
+            `;
+
+            // Screenings
+            out += renderTable('🎬 Screenings', 'screenings', [
+                { key: 'id', label: 'ID' },
+                { key: 'movie_id', label: 'Movie ID' },
+                { key: 'auditorium_id', label: 'Auditorium' },
+                { key: 'start_time', label: 'Start' },
+                { key: 'base_price', label: 'Price' }
+            ], data.screenings);
+
+            // Seat Locks
+            out += renderTable('🔒 Seat Locks', 'seat_locks', [
+                { key: 'id', label: 'ID' },
+                { key: 'screening_id', label: 'Screening ID' },
+                { key: 'seat_id', label: 'Seat ID' },
+                { key: 'locked_by', label: 'Locked By' },
+                { key: 'expires_at', label: 'Expires At' },
+                { key: 'actions', label: 'Actions', render: (r) => `<button class=\"secondary\" onclick=\"releaseLock(${r.id})\">Release</button>` }
+            ], data.seat_locks);
+
+            // Movies (small)
+            out += renderTable('🎞️ Movies', 'movies', [
+                { key: 'id', label: 'ID' },
+                { key: 'title', label: 'Title' },
+                { key: 'duration_minutes', label: 'Duration' },
+                { key: 'genre', label: 'Genre' }
+            ], data.movies);
+
+            tableContainer.innerHTML = out;
+
+            // Load first pages for paginated sections
+            setTimeout(() => {
+                try { loadBookingsPage(1); } catch (e) { /* ignore */ }
+                try { loadPaymentsPage(1); } catch (e) { /* ignore */ }
+            }, 50);
         }
 
         function showMessage(text, type) {
@@ -395,6 +508,142 @@
             setTimeout(() => {
                 messageDiv.className = 'message';
             }, 5000);
+        }
+
+        // Release a seat lock by id (calls DELETE endpoint)
+        async function releaseLock(id) {
+            if (!confirm('Release seat lock #' + id + '?')) return;
+            try {
+                const res = await fetch('/api/admin/seat-locks/' + id, { method: 'DELETE' });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showMessage('✅ Lock released', 'success');
+                    fetchData();
+                } else {
+                    showMessage('❌ ' + (data.error || 'Gagal melepaskan lock'), 'error');
+                }
+            } catch (err) {
+                showMessage('❌ Error: ' + err.message, 'error');
+            }
+        }
+
+        // Export a specific table (by key) to CSV using stored admin data and columns map
+        function exportTable(key) {
+            // support paginated sections which store last page data separately
+            const data = (key === 'bookings') ? window._bookingsLastPageData : (key === 'payments') ? window._paymentsLastPageData : (window._adminData && window._adminData[key]);
+            const columns = window._columnsMap && window._columnsMap[key];
+            if (!data || !columns) {
+                alert('Tidak ada data untuk diexport');
+                return;
+            }
+
+            // build csv header from columns (skip actions)
+            const header = columns.filter(c => c.key !== 'actions').map(c => c.label.replace(/\n/g, ' '));
+            let csv = header.join(',') + '\n';
+
+            data.forEach(row => {
+                const vals = columns.filter(c => c.key !== 'actions').map(c => {
+                    const v = c.render ? (c.render(row) + '') : (row[c.key] ?? '');
+                    // strip HTML if any
+                    return '"' + (v + '').replace(/"/g, '""').replace(/<[^>]*>/g, '') + '"';
+                });
+                csv += vals.join(',') + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `cinema-${key}-${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            showMessage('✅ Export berhasil', 'success');
+        }
+
+        // --- Bookings pagination & rendering ---
+        async function loadBookingsPage(page = 1) {
+            const from = document.getElementById('bookings-from').value || '';
+            const to = document.getElementById('bookings-to').value || '';
+            const status = document.getElementById('bookings-status').value || '';
+            const pageSize = 10;
+            const tableDiv = document.getElementById('bookings-table');
+            tableDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Memuat bookings...</p></div>';
+
+            const q = new URLSearchParams({ page, pageSize, ...(status ? { status } : {}), ...(from ? { from } : {}), ...(to ? { to } : {}) });
+            try {
+                const res = await fetch('/api/admin/bookings?' + q.toString());
+                const j = await res.json();
+                if (!res.ok) {
+                    tableDiv.innerHTML = `<div class="empty">Error: ${j.error}</div>`;
+                    return;
+                }
+                window._bookingsLastPageData = j.data || [];
+                renderBookingsTable(j);
+            } catch (err) {
+                tableDiv.innerHTML = `<div class="empty">Error: ${err.message}</div>`;
+            }
+        }
+
+        function renderBookingsTable(pageData) {
+            const rows = pageData.data || [];
+            const tableDiv = document.getElementById('bookings-table');
+            if (!rows.length) {
+                tableDiv.innerHTML = '<div class="empty">Tidak ada bookings</div>';
+                return;
+            }
+
+            let html = '<table><thead><tr><th>ID</th><th>User ID</th><th>Screening</th><th>Status</th><th>Amount</th><th>Tanggal</th></tr></thead><tbody>';
+            rows.forEach(r => {
+                html += `<tr><td>#${r.id}</td><td>${r.user_id || '-'}</td><td>${r.screening_id}</td><td>${r.status}</td><td>${Intl.NumberFormat('id-ID').format(r.total_amount || 0)}</td><td>${r.created_at ? new Date(r.created_at).toLocaleString('id-ID') : '-'}</td></tr>`;
+            });
+            html += '</tbody></table>';
+
+            // pagination
+            html += `<div style="display:flex; gap:8px; align-items:center; margin-top:10px;"><button class="secondary" ${pageData.page<=1? 'disabled':''} onclick="loadBookingsPage(${pageData.page-1})">Prev</button><span>Page ${pageData.page} / ${pageData.totalPages}</span><button class="secondary" ${pageData.page>=pageData.totalPages? 'disabled':''} onclick="loadBookingsPage(${pageData.page+1})">Next</button></div>`;
+
+            tableDiv.innerHTML = html;
+        }
+
+        // --- Payments pagination & rendering ---
+        async function loadPaymentsPage(page = 1) {
+            const from = document.getElementById('payments-from').value || '';
+            const to = document.getElementById('payments-to').value || '';
+            const status = document.getElementById('payments-status').value || '';
+            const pageSize = 10;
+            const tableDiv = document.getElementById('payments-table');
+            tableDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Memuat payments...</p></div>';
+
+            const q = new URLSearchParams({ page, pageSize, ...(status ? { status } : {}), ...(from ? { from } : {}), ...(to ? { to } : {}) });
+            try {
+                const res = await fetch('/api/admin/payments?' + q.toString());
+                const j = await res.json();
+                if (!res.ok) {
+                    tableDiv.innerHTML = `<div class="empty">Error: ${j.error}</div>`;
+                    return;
+                }
+                window._paymentsLastPageData = j.data || [];
+                renderPaymentsTable(j);
+            } catch (err) {
+                tableDiv.innerHTML = `<div class="empty">Error: ${err.message}</div>`;
+            }
+        }
+
+        function renderPaymentsTable(pageData) {
+            const rows = pageData.data || [];
+            const tableDiv = document.getElementById('payments-table');
+            if (!rows.length) {
+                tableDiv.innerHTML = '<div class="empty">Tidak ada payments</div>';
+                return;
+            }
+
+            let html = '<table><thead><tr><th>ID</th><th>Booking ID</th><th>Provider</th><th>Amount</th><th>Status</th><th>Paid At</th></tr></thead><tbody>';
+            rows.forEach(r => {
+                html += `<tr><td>#${r.id}</td><td>${r.booking_id}</td><td>${r.provider || '-'}</td><td>${Intl.NumberFormat('id-ID').format(r.amount || 0)}</td><td>${r.status}</td><td>${r.paid_at ? new Date(r.paid_at).toLocaleString('id-ID') : '-'}</td></tr>`;
+            });
+            html += '</tbody></table>';
+
+            html += `<div style="display:flex; gap:8px; align-items:center; margin-top:10px;"><button class="secondary" ${pageData.page<=1? 'disabled':''} onclick="loadPaymentsPage(${pageData.page-1})">Prev</button><span>Page ${pageData.page} / ${pageData.totalPages}</span><button class="secondary" ${pageData.page>=pageData.totalPages? 'disabled':''} onclick="loadPaymentsPage(${pageData.page+1})">Next</button></div>`;
+
+            tableDiv.innerHTML = html;
         }
 
         function exportData() {

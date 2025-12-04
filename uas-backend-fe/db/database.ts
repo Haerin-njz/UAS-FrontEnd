@@ -55,7 +55,7 @@ dbSync.serialize(() => {
   });
 
   // Run migrations for ticketing system
-  runMigrations().then(() => {
+  runMigrations(dbSync).then(() => {
     console.log('✅ Ticketing schema migrations complete');
   }).catch((err) => {
     console.error('❌ Migration error:', err);
