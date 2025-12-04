@@ -19,6 +19,10 @@ export default function BeliTiketPage() {
   const [cvv, setCvv] = useState('');
   const [bankName, setBankName] = useState('BCA');
 
+  // minimal film/poster info so orders saved to DB include film details
+  const [film, setFilm] = useState('One Piece Film: Red');
+  const [poster, setPoster] = useState('/img/Gambar-Onepiece.jpg');
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setIsLoading(true);
@@ -43,6 +47,30 @@ export default function BeliTiketPage() {
       const fakeOrderId = `ORD-${Date.now()}`;
       setIsError(false);
       setMessage(`Pembelian Sukses! ID Order Anda: ${fakeOrderId}`);
+
+      // Persist to local SQLite via our API
+      try {
+        await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            film,
+            poster,
+            date: new Date().toISOString(),
+            name,
+            email,
+            quantity,
+            paymentMethod,
+            payment: paymentMethod === 'card'
+              ? { provider: 'card', amount: 0, status: 'completed', details: { last4: cardNumber.slice(-4) } }
+              : { provider: bankName, amount: 0, status: 'pending' }
+          })
+        });
+      } catch (apiErr) {
+        // don't block UI on API failure — log for diagnostics
+        // You can show a warning to user if desired
+        // console.warn('Failed to save order to DB:', apiErr);
+      }
 
       setName('');
       setEmail('');

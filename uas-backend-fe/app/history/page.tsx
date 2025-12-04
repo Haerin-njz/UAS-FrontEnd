@@ -1,42 +1,21 @@
-import React from "react";
+'use client';
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 
-const fakeOrders = [
-    {
-        id: "ORD-1A2B3C",
-        film: "One Piece Film: Red",
-        poster: "/img/Gambar-Onepiece.jpg",
-        quantity: 2,
-        date: "15 November 2025",
-        status: "Selesai",
-    },
-    {
-        id: "ORD-4D5E6F",
-        film: "Frieren: Beyond Journey's End",
-        poster: "/img/Gambar-Frieren.jpg",
-        quantity: 1,
-        date: "10 November 2025",
-        status: "Selesai",
-    },
-    {
-        id: "ORD-7G8H9I",
-        film: "Stranger Things: The Movie",
-        poster: "/img/Gambar-StrangerThings.jpg",
-        quantity: 3,
-        date: "05 November 2025",
-        status: "Dibatalkan",
-    },
-    {
-        id: "ORD-J1K2L3",
-        film: "Avengers: Secret Wars",
-        poster: "/img/Gambar-Avengers.jpg",
-        quantity: 2,
-        date: "01 November 2025",
-        status: "Selesai",
-    },
-];
-
 export default function RiwayatPesananPage() {
+    const [orders, setOrders] = useState<any[] | null>(null);
+    const [loading, setLoading] = useState(true);
+    useEffect(() => {
+        setLoading(true);
+        fetch('/api/orders')
+            .then((r) => r.json())
+            .then((j) => {
+                setOrders(Array.isArray(j.data) ? j.data : (j.data || []));
+            })
+            .catch(() => setOrders([]))
+            .finally(() => setLoading(false));
+    }, []);
+
     return (
         <>
             {/* load history page stylesheet from public/style/history.css */}
@@ -57,37 +36,35 @@ export default function RiwayatPesananPage() {
                         Riwayat Pesanan Anda
                     </h1>
 
-                    {fakeOrders.length === 0 ? (
+                    {loading ? (
+                        <div className="bg-white rounded-2xl shadow-sm p-8 text-center text-gray-800">Memuat riwayat...</div>
+                    ) : !orders || orders.length === 0 ? (
                         <div className="bg-white rounded-2xl shadow-sm p-8 text-center text-gray-800">
                             Anda belum memiliki riwayat pesanan.
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 history-list">
-                            {fakeOrders.map((order) => (
-                                <article key={order.id} className="history-item">
-                                    
-                                    {/* Poster (UPDATED) */}
+                            {orders.map((order: any) => (
+                                <article key={order.order_id} className="history-item">
                                     <div className="poster overflow-hidden rounded-xl">
-                                        <img
-                                            src={order.poster}
-                                            alt={order.film}
-                                            className="w-full h-full object-cover"
-                                        />
+                                        {order.poster ? (
+                                            <img src={order.poster} alt={order.film || order.order_id} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="poster-fallback">{(order.film || '').split(' ').map((w:string)=>w[0]).slice(0,2).join('')}</div>
+                                        )}
                                     </div>
 
-                                    {/* Details */}
                                     <div className="details">
-                                        <h3 className="title">{order.film}</h3>
+                                        <h3 className="title">{order.film || 'Tiket'}</h3>
                                         <div className="meta">
-                                            <p className="truncate"><strong>Order ID:</strong> {order.id}</p>
+                                            <p className="truncate"><strong>Order ID:</strong> {order.order_id}</p>
                                             <p><strong>Jumlah:</strong> {order.quantity} tiket</p>
-                                            <p><strong>Tanggal:</strong> {order.date}</p>
+                                            <p><strong>Tanggal:</strong> {order.date || order.created_at}</p>
                                         </div>
                                     </div>
 
-                                    {/* Status + action */}
                                     <div className="item-right">
-                                        <span className={`status status-${order.status.toLowerCase()}`}>
+                                        <span className={`status status-${(order.status||'unknown').toLowerCase()}`}>
                                             {order.status}
                                         </span>
                                         <Link href="#" className="action-link">Lihat Detail</Link>
