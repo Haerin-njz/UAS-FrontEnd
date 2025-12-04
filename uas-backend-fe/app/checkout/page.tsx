@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { films } from "@/lib/films";
 
 // =====================
 // TYPE DEFINITIONS
@@ -106,7 +107,15 @@ export default function CheckoutPage() {
   }
 
   function handleBack() {
-    router.push("/jadwal");
+    // Try to navigate back to the specific film jadwal page if we can find the slug
+    const filmObj = films.find(
+      (f) => f.title.toLowerCase() === filmParam.toLowerCase()
+    );
+    if (filmObj) {
+      router.push(`/jadwal/${filmObj.slug}`);
+    } else {
+      router.push("/jadwal");
+    }
   }
 
   // =====================

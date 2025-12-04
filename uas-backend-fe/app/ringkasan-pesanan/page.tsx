@@ -25,7 +25,7 @@ export default function RingkasanPesananPage() {
       <div className="order-container">
         <header className="page-header">
           {/* Tombol Back ke Jadwal Film */}
-          <Link href="/jadwal" className="back-button">
+          <Link href="/checkout" className="back-button">
             <span className="material-symbols-outlined">arrow_back</span>
           </Link>
           <span className="header-title">Order</span>

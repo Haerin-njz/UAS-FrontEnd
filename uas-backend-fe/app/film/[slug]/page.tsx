@@ -61,7 +61,7 @@ export default async function FilmDetailPage({ params }: Props) {
 
       <div className="cta-fixed">
         <div className="container">
-          <Link href="/jadwal" className="btn-pesan">Lihat Jadwal & Pesan Tiket</Link>
+          <Link href={`/jadwal/${film.slug}`} className="btn-pesan">Lihat Jadwal & Pesan Tiket</Link>
         </div>
       </div>
     </main>
