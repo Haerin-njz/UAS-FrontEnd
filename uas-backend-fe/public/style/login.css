@@ -14,7 +14,7 @@
   color: #333;
 }
 
-.login-content {
+.signup-content {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -39,7 +39,7 @@
   object-fit: contain;
 }
 
-.login-form {
+.signup-form {
   width: 100%;
   max-width: 420px;
   background: #fff;
@@ -77,7 +77,7 @@
   min-height: 28px;
 }
 
-.login-form button {
+.signup-form button {
   padding: 12px 16px;
   border-radius: 8px;
   background: #333;
@@ -93,5 +93,5 @@
 }
 
 @media (max-width: 600px) {
-  .login-form { max-width: 92%; }
+  .signup-form { max-width: 92%; }
 }
