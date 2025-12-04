@@ -40,7 +40,7 @@ export default function Navbar() {
   return (
     <header>
       <div className="container">
-        <div className="logo">UTS Front END</div>
+        <div className="logo">UAS Front END</div>
         {!user ? (
           <div className="login-signup">
             <Link href="/login">Log In</Link>
