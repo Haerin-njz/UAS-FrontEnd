@@ -151,3 +151,35 @@ button.back:hover {
 footer {
   display: none !important;
 }
+
+/* Fixed CTA bar for checkout (bottom of viewport) */
+.cta-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgba(26,26,26,0.98);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.4);
+  padding: 14px 16px;
+  z-index: 200;
+  box-sizing: border-box;
+}
+
+.cta-fixed .container {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.cta-fixed button {
+  padding: 12px 28px;
+  border-radius: 10px;
+  font-size: 18px;
+}
+
+/* Ensure content isn't hidden behind the fixed CTA */
+body { padding-bottom: 96px; }
