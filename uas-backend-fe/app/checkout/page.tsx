@@ -92,18 +92,25 @@ export default function CheckoutPage() {
     localStorage.setItem("bookings", JSON.stringify(updated));
 
     const today = new Date().toISOString().split("T")[0];
+    const HARGA_PER_TIKET = 45000;
+    const BIAYA_LAYANAN = 2500;
+    const PROMO_DEFAULT = 40000;
+
     const orderSummary = {
       film: filmParam,
       jam: jamParam,
       seats: selected,
-      hargaPerTiket: 65000,
-      biayaLayanan: 2500,
-      promo: 40000,
+      hargaPerTiket: HARGA_PER_TIKET,
+      biayaLayanan: BIAYA_LAYANAN,
+      promo: PROMO_DEFAULT,
       tanggal: today,
     };
     localStorage.setItem("lastOrder", JSON.stringify(orderSummary));
 
-    router.push("/ringkasan-pesanan");
+    // try to find slug for the chosen film so we can pass it to ringkasan
+    const filmObj = films.find((f) => f.title.toLowerCase() === filmParam.toLowerCase());
+    const slug = filmObj ? filmObj.slug : encodeURIComponent(filmParam);
+    router.push(`/ringkasan-pesanan?film=${encodeURIComponent(slug)}`);
   }
 
   function handleBack() {
